@@ -1,9 +1,13 @@
 package gurdurr
 
-import "github.com/jmoiron/sqlx"
+import (
+	"database/sql"
+
+	"github.com/jmoiron/sqlx"
+)
 
 type QueryExecutor interface {
-	Exec(*queryObject) *queryResult
+	Exec(*queryObject) (QueryResult, error)
 }
 
 type queryExecutor struct {
@@ -20,5 +24,21 @@ func (q *queryExecutor) Exec(ob *queryObject) (QueryResult, error) {
 		return &queryResult{
 			res: rows,
 		}, nil
+	}
+}
+
+const (
+	MSSQL    string = "sqlserver"
+	Postgres string = "postgres"
+	MySQL    string = "mysql"
+	SQLITE   string = "sqlite3"
+)
+
+func NewRepository(conn *sql.DB, driver string) QueryExecutor {
+	db := sqlx.NewDb(conn, driver)
+	db.Ping()
+
+	return &queryExecutor{
+		db: db,
 	}
 }
