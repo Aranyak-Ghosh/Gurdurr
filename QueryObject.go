@@ -54,8 +54,9 @@ type queryPart struct {
 }
 
 type whereQueryPart struct {
-	queryPart
-	connector *QueryConnector
+	columnName string
+	comparator ComparatorType
+	value      any
 }
 
 type queryObject struct {
@@ -78,6 +79,10 @@ func (q *queryObject) Select(columns []string) *queryObject {
 	q.queryString = fmt.Sprintf("%s %s", selectStatement, q.queryString)
 
 	return q
+}
+
+func (q *queryObject) Where() {
+
 }
 
 func NewQuery(tableName string) *queryObject {
