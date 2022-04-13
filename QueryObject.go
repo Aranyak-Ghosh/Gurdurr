@@ -7,7 +7,7 @@ import (
 	"github.com/Aranyak-Ghosh/golist"
 )
 
-type ComparatorType = int
+type ComparatorType int
 
 const (
 	GreaterThanOrEqual ComparatorType = iota
@@ -20,7 +20,30 @@ const (
 	Not
 )
 
-type Clause = int
+func (ct ComparatorType) String() string {
+	switch ct {
+	case GreaterThanOrEqual:
+		return ">="
+	case GreaterThan:
+		return ">"
+	case Equals:
+		return "=="
+	case LessThan:
+		return "<"
+	case LessThanOrEqual:
+		return "<="
+	case NotEquals:
+		return "!="
+	case Like:
+		return "LIKE"
+	case Not:
+		return "!"
+	default:
+		return ""
+	}
+}
+
+type Clause int
 
 const (
 	Select Clause = iota
@@ -57,6 +80,11 @@ type whereQueryPart struct {
 	columnName string
 	comparator ComparatorType
 	value      any
+	connector  QueryConnector
+}
+
+type whereQuery struct {
+	queryPart []whereQueryPart
 }
 
 type queryObject struct {
@@ -81,8 +109,10 @@ func (q *queryObject) Select(columns []string) *queryObject {
 	return q
 }
 
-func (q *queryObject) Where() {
+func (q *queryObject) Where(columnName string, coparator ComparatorType, value any) *queryObject {
+	queryString := fmt.Sprintf("%s %s ?", columnName, coparator.String())
 
+	return q
 }
 
 func NewQuery(tableName string) *queryObject {
