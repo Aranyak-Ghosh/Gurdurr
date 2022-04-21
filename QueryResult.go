@@ -1,6 +1,7 @@
 package gurdurr
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/jmoiron/sqlx"
@@ -15,22 +16,37 @@ type QueryResult interface {
 }
 
 func (q *queryResult) Result(data any) error {
-	if reflect.ValueOf(data).Kind() == reflect.Array {
-		i := data.([]any)
-		for q.res.Next() {
-			var val interface{}
+	v := reflect.ValueOf(data)
 
-			if err := q.res.StructScan(&val); err != nil {
+	if v.Kind() == reflect.Pointer {
+		v = v.Elem()
+		out := make([]interface{}, 0)
+		if v.Kind() == reflect.Slice || v.Kind() == reflect.Array {
+			for q.res.Next() {
+
+				var val = reflect.New(v.Type().Elem()).Elem().Interface()
+
+				if err := q.res.StructScan(&val); err != nil {
+					return err
+				}
+
+				out = append(out, val)
+			}
+			data = &out
+		} else {
+			q.res.Next()
+			if err := q.res.StructScan(&data); err != nil {
 				return err
 			}
-			i = append(i, val)
-		}
-		data = i
-	} else {
-		q.res.Next()
-		if err := q.res.StructScan(&data); err != nil {
-			return err
 		}
 	}
-	return nil
+	return fmt.Errorf("Value must be of type pointer")
 }
+
+// func Result[T any](q *queryResult) T {
+// 	var out T
+
+// 	for q.res.Next() {
+
+// 	}
+// }

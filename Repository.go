@@ -15,8 +15,7 @@ type queryExecutor struct {
 }
 
 func (q *queryExecutor) Exec(ob *queryObject) (QueryResult, error) {
-	tx := q.db.MustBegin()
-	rows, err := tx.Queryx(ob.queryString)
+	rows, err := q.db.Queryx(ob.queryString)
 
 	if err != nil {
 		return nil, err
